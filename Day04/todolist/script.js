@@ -1,0 +1,4 @@
+$("add").clock(function(){
+    let task=$("#task").val();
+    $("#tasklist").append("<li>"+task+"</li>");
+})
