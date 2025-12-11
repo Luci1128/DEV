@@ -1,0 +1,31 @@
+#box1{
+    height: 100px;
+    width: 100px;
+    border: 2px solid black;
+    padding: 5px;
+    background-color: orange;
+    margin: 5px;
+}
+#box2{
+    height: 100px;
+    width: 100px;
+    border: 2px solid black;
+    padding: 5px;
+    background-color:pink;
+    margin: 5px;
+}
+#box3{
+    height: 100px;
+    width: 100px;
+    border: 2px solid black;
+    padding: 5px;
+    background-color: blue;
+    margin: 5px;
+}
+.container{
+    display: flex;
+    /* flex-direction: row-reverse; */
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
