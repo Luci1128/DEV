@@ -1,57 +1,155 @@
-let bird=document.querySelector("bird");
-let birdY=200;
-let gravity=2;
-let score=0;
+$(document).ready(function() {
+    let bird = $('#bird');
+    let birdY = 200;
+    let velocity = 0;
+    let gravity = 0.1;      // Reduced fall speed (was 0.4)
+    let jump = -5;          // Slightly adjusted jump
+    let score = 0;
+    let gameRunning = true;
+    let pipes = [];
+    let gameContainer = $('#game-container');
 
-function createPipe(){
-    let gap=140;
-    let pipeTopHeight=Math.random()*250+50;
-    let pipeBottomHeight=600-pipeTopHeight-gap;
+    let gameState = {
+        score: 0,
+        highestScore: localStorage.getItem('flappyHighest') || 0
+    };
 
-    let pipeTop=$("<div class='pipe'></div>");
-    pipeTop.css({left:"100%",top:0,height:pipeTopHeight});
+    function createPipe() {
+        if (!gameRunning) return;
+        
+        let gap = 160;
+        let minHeight = 60;
+        let maxHeight = 280;
+        let pipeTopHeight = Math.random() * (maxHeight - minHeight) + minHeight;
+        let pipeBottomHeight = $(window).height() - pipeTopHeight - gap;
 
-    let pipeBottomHeightottom=$("<div class='pipe'></div>");
-    pipeTop.css({left:"100%",top:pipeTopHeight+gap,height:pipeBottomHeight});
+        let pipeTop = $("<div class='pipe'></div>").css({
+            left: '100%',
+            top: 0,
+            height: pipeTopHeight + 'px'
+        });
 
-    $("body").append(pipeTop,pipeBottom);
-    pipeTop.animate({left:"-100px"},3000,function(){
-        $(this).remove();
-        score++;
-        $("#scorebox").text("Score: "+score);
-    });
+        let pipeBottom = $("<div class='pipe'></div>").css({
+            left: '100%',
+            top: (pipeTopHeight + gap) + 'px',
+            height: pipeBottomHeight + 'px'
+        });
 
-    pipeBottom.animate({left:"-100px"},3000,function(){
-        $(this).remove();
-    });
+        gameContainer.append(pipeTop, pipeBottom);
+        pipes.push({top: pipeTop, bottom: pipeBottom});
 
-    let checkCollision=setInterval(function(){
-        let birdpop=bird.getBoundingClientRect();
-        let toppop=pipeTop[0].getBoundingClientRect();
-        let bottompop=pipeBottom[0].getBoundingClientRect();
+        pipeTop.animate({left: '-100px'}, 4500, function() {
+            $(this).remove();
+            pipes = pipes.filter(p => p.top[0] !== this);
+            if (gameRunning) score++;
+            updateScore();
+        });
 
-        if(birdpop.right>toppop.left && birdpop.left<toppop.right &&
-           birdpop.top<toppop.bottom || birdpop.right>bottompop.left && birdpop.left<bottompop.right &&
-           birdpop.bottom>bottompop.top){
-            alert("Game Over! Your Score: "+score);
-            clearInterval(checkCollision);
+        pipeBottom.animate({left: '-100px'}, 4500, function() {
+            $(this).remove();
+            pipes = pipes.filter(p => p.bottom[0] !== this);
+        });
+    }
+
+    function updateBird() {
+        if (!gameRunning) return;
+        
+        velocity += gravity;
+        birdY += velocity;
+        
+        if (birdY > $(window).height() - 60) {
+            gameOver();
+            return;
         }
-    },30);
-}
-
-setInterval(function(){
-    birdY+=gravity;
-    bird.css("top",birdY+"px");
-    if (birdY > $(window).height()){
-        alert("Bird fell! Game Over!");
-        location.reload();
+        if (birdY < 0) {
+            birdY = 0;
+            velocity = 0;
+        }
+        
+        bird.css('top', birdY + 'px');
     }
-},30);
 
-$(document).keydown(function(e){
-    if(e.key==" "){
-        birdY-=50;
+    function checkCollisions() {
+        if (!gameRunning) return;
+        
+        let birdRect = bird[0].getBoundingClientRect();
+        let containerRect = gameContainer[0].getBoundingClientRect();
+        
+        pipes.forEach(function(pipePair) {
+            if (!pipePair.top[0] || !pipePair.bottom[0]) return;
+            
+            let topRect = pipePair.top[0].getBoundingClientRect();
+            let bottomRect = pipePair.bottom[0].getBoundingClientRect();
+            
+            if (birdRect.right > topRect.left && 
+                birdRect.left < topRect.right && 
+                birdRect.bottom > topRect.top && 
+                birdRect.top < topRect.bottom) {
+                gameOver();
+                return;
+            }
+            
+            if (birdRect.right > bottomRect.left && 
+                birdRect.left < bottomRect.right && 
+                birdRect.bottom > bottomRect.top && 
+                birdRect.top < bottomRect.bottom) {
+                gameOver();
+                return;
+            }
+        });
     }
+
+    function updateScore() {
+        $('#scorebox').text('Score: ' + score);
+    }
+
+    function gameOver() {
+        gameRunning = false;
+        clearInterval(pipeInterval);
+        clearInterval(birdInterval);
+        clearInterval(collisionInterval);
+        
+        if (score > gameState.highestScore) {
+            gameState.highestScore = score;
+            localStorage.setItem('flappyHighest', score);
+        }
+        
+        $('#final-score').text(score + ' (High: ' + gameState.highestScore + ')');
+        $('#game-over').fadeIn(500);
+    }
+
+    function restartGame() {
+        gameRunning = true;
+        score = 0;
+        birdY = 200;
+        velocity = 0;
+        pipes = [];
+        $('.pipe').remove();
+        $('#game-over').fadeOut(500);
+        updateScore();
+        
+        pipeInterval = setInterval(createPipe, 2500);  // Slower pipe generation (was 2500)
+        birdInterval = setInterval(updateBird, 210);
+        collisionInterval = setInterval(checkCollisions, 20);
+    }
+
+    $(document).keydown(function(e) {
+        if (e.key === ' ' && gameRunning) {
+            e.preventDefault();
+            velocity = jump;
+        }
+    });
+
+    gameContainer.click(function(e) {
+        if (gameRunning) {
+            e.preventDefault();
+            velocity = jump;
+        }
+    });
+
+    $('#restart-btn').click(restartGame);
+
+    let pipeInterval = setInterval(createPipe, 2500);
+    let birdInterval = setInterval(updateBird, 10);
+    let collisionInterval = setInterval(checkCollisions, 20);
 });
-
-setInterval(createPipe,2500);

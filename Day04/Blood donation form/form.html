@@ -9,24 +9,24 @@
 <body>
     <div class="container">
         <div class="card">
-            <div class="head">
+            <div class="header">
                 <div class="blood-drop">💉</div>
                 <h1>Donate Blood Form</h1>
                 <p>Join thousands who give hope through blood donation</p>
             </div>
             
             <form id="donationForm">
-                <div class="ipgroup">
+                <div class="input-group">
                     <label for="name">Full Name *</label>
                     <input type="text" id="name" name="name" required>
                 </div>
 
-                <div class="ipgroup">
+                <div class="input-group">
                     <label for="dob">Date of Birth *</label>
                     <input type="date" id="dob" name="dob" required>
                 </div>
 
-                <div class="ipgroup">
+                <div class="input-group">
                     <label for="bloodGroup">Blood Group *</label>
                     <select id="bloodGroup" name="bloodGroup" required>
                         <option value="">Select Blood Group</option>
@@ -41,22 +41,27 @@
                     </select>
                 </div>
 
-                <div class="ipgroup">
+                <div class="input-group">
                     <label for="contact">Contact Number *</label>
-                    <input type="tel" id="contact" name="contact" required>
+                    <input type="number" id="contact" name="contact" required>
                 </div>
 
-                <div class="ipgroup">
+                <div class="input-group">
                     <label for="city">City *</label>
                     <input type="text" id="city" name="city" required>
                 </div>
 
-                <button type="submit" class="btn">Register for Donation</button>
-                <h3></h3>
+                <button type="submit">Register for Donation</button>
             </form>
+
+            <div id="successMessage" class="success-message hidden">
+                <h3>Registration Successful!</h3>
+                <p>Your blood donation registration has been submitted. We will contact you soon.</p>
+            </div>
         </div>
     </div>
 
     <script src="script.js"></script>
 </body>
 </html>
+
